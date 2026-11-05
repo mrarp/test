@@ -1,0 +1,82 @@
+# Кандидатные пути для контент-дискавери (ffuf/feroxbuster/gobuster).
+# НЕ гарантированный список — платформа настраивается под заказчика.
+# Пример использования:
+#   ffuf -w wordlists/websoft_endpoints.txt \
+#        -H "Authorization: Bearer $TOKEN" \
+#        -u https://hcm.example.local/FUZZ -mc 200,201,204,301,302,401,403
+#
+# --- корни API ---
+api
+api/v1
+api/v2
+rest
+odata
+_api
+_wt
+_ssp
+# --- discovery / спеки ---
+swagger
+swagger/index.html
+swagger.json
+swagger/v1/swagger.json
+openapi.json
+api-docs
+api/docs
+v3/api-docs
+# --- служебные ---
+robots.txt
+sitemap.xml
+web.config
+favicon.ico
+# --- типовые разделы портала WebTutor ---
+default.html
+index.html
+catalog
+user
+users
+profile
+account
+report
+reports
+olap
+dashboard
+search
+search.html
+news
+wiki
+forum
+blog
+poll
+survey
+test
+tests
+course
+courses
+program
+competence
+assessment
+vacancy
+# --- файловые операции (кандидаты для path traversal / загрузки) ---
+upload
+uploads
+download
+file
+files
+doc
+docs
+documents
+export
+import
+attachment
+# --- аутентификация / сессии ---
+login
+auth
+oauth
+token
+sso
+saml
+# --- админ (трогать точечно, не фаззить массово) ---
+admin
+_ad
+settings
+config

